@@ -12,7 +12,7 @@ import requests
 from requests.adapters import HTTPAdapter
 
 rjid_pat = re.compile(r"RJ\d{6}(\d\d)?", flags=re.IGNORECASE)
-
+vjid_pat = re.compile(r"VJ\d{6}(\d\d)?", flags=re.IGNORECASE)
 
 def _split(audio_files: List[Path]) -> List[List[Path]]:
     regexes = [
@@ -115,8 +115,11 @@ def get_rjid(name: str) -> Optional[str]:
         Optional[str]: Returns a string(upper case, like RJ123123) if found, otherwise return None
     """
     m = rjid_pat.search(name)
+    n = vjid_pat.search(name)
     if m:
         return m.group().upper()
+    if n:
+        return n.group().upper()
     return None
 
 

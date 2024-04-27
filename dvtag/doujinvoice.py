@@ -40,8 +40,13 @@ class DoujinVoice:
 
         try:
             pattern = r"<th>サークル名</th>[\s\S]*?<a[\s\S]*?>(.*?)<"
-            circle = re.search(pattern, html).group(1)
-            self.circle = unescape(circle)
+            circle = re.search(pattern, html)
+            if circle:
+                self.circle = unescape(circle.group(1))
+            pattern_vj = r"<th>ブランド名</th>[\s\S]*?<a[\s\S]*?>(.*?)<"
+            circle_vj = re.search(pattern_vj, html)
+            if circle_vj:
+                self.circle = unescape(circle_vj.group(1))
 
         except AttributeError as e:
             logging.error("Cannot get circle from {}: {}".format(self.rjid, e))
@@ -54,6 +59,10 @@ class DoujinVoice:
         match = re.search(pattern, html)
         if match:
             self.sale_date = "{}-{}-{}".format(match.group(1), match.group(2), match.group(3))
+        pattern_vj = r"www\.dlsite\.com/pro/new/=/year/([0-9]{4})/mon/([0-9]{2})/day/([0-9]{2})/"
+        match_vj = re.search(pattern_vj, html)
+        if match_vj:
+            self.sale_date = "{}-{}-{}".format(match_vj.group(1), match_vj.group(2), match_vj.group(3))
 
     def _init_metadata(self):
         rsp = session.get("https://www.dlsite.com/maniax/product/info/ajax?product_id=" + self.rjid)
@@ -61,7 +70,8 @@ class DoujinVoice:
         try:
             json_data = rsp.json()[self.rjid]
 
-            self.dl_count = int(json_data["dl_count"])
+            if json_data["dl_count"] != None:
+                self.dl_count = int(json_data["dl_count"])
             self.url = json_data["down_url"].replace("download/split", "work").replace("download", "work")
             self.work_name = json_data["work_name"]
             self.work_image = "https:" + json_data["work_image"]
